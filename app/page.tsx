@@ -71,6 +71,7 @@ const DEFAULT_MOCK_DATA: Task[] = [
 
 export default function Home() {
   const { toast } = useToast()
+  const { currentColors } = useTheme()
   const isMobile = useMobile()
   const initialLoadRef = useRef(true)
 
@@ -490,9 +491,9 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f0f2f5]">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1877f2] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading tasks...</p>
         </div>
       </div>
@@ -728,8 +729,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-        </div>
 
         {/* Bottom fixed bar for timer and Facebook */}
         <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-30">
