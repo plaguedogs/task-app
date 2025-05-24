@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* These will be overridden by the theme provider */
+    --background: #ffffff;
+    --foreground: #000000;
+    --card: #ffffff;
+    --card-foreground: #000000;
+    --primary: #1877f2;
+    --primary-foreground: #ffffff;
+    --secondary: #f0f2f5;
+    --secondary-foreground: #000000;
+    --muted: #f0f2f5;
+    --muted-foreground: #65676b;
+    --accent: #1877f2;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #e4e6eb;
+    --input: #e4e6eb;
+    --ring: #1877f2;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Improve touch targets on mobile */
+  @media (max-width: 768px) {
+    button,
+    a,
+    input,
+    textarea,
+    select {
+      @apply min-h-[44px];
+    }
+
+    /* Increase font size for better readability on mobile */
+    body {
+      @apply text-base;
+    }
+  }
+}
+
+/* Animation for timer notification */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .container {
+    @apply px-3;
+  }
+
+  /* Improve spacing on mobile */
+  .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+    @apply mt-3;
+  }
+
+  /* Make buttons more tappable */
+  .button,
+  button {
+    @apply py-2.5;
+  }
+}
+
+/* Portrait mode phone optimizations */
+@media (max-width: 768px) and (orientation: portrait) {
+  /* Ensure content fits in viewport */
+  .container {
+    @apply px-2 py-2;
+  }
+
+  /* Reduce spacing between elements */
+  .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+    @apply mt-2;
+  }
+
+  /* Make cards more compact */
+  .rounded-lg {
+    @apply p-3;
+  }
+
+  /* Reduce font sizes */
+  h1 {
+    @apply text-xl;
+  }
+
+  h2 {
+    @apply text-base;
+  }
+
+  /* Optimize form elements */
+  input,
+  textarea {
+    @apply text-sm;
+  }
+
+  /* Make buttons more compact */
+  .button,
+  button {
+    @apply py-1.5 px-3 text-sm;
+  }
+}
+
+/* Fix for sticky header on small screens */
+@media (max-width: 480px) {
+  header {
+    @apply h-12;
+  }
+
+  header h1 {
+    @apply text-lg;
+  }
+}
+
+/* Swipe transitions */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.slide-in {
+  animation: slide-in-right 0.3s forwards;
+}
+
+.slide-out {
+  animation: slide-out-right 0.3s forwards;
+}
+
+/* Swipe indicator */
+.swipe-indicator {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  background-color: rgba(24, 119, 242, 0.1);
+  color: #1877f2;
+  padding: 0.25rem 0.5rem;
+  border-top-left-radius: 0.375rem;
+  border-bottom-left-radius: 0.375rem;
+  z-index: 10;
+}
+
+.swipe-indicator-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  transform: rotate(90deg);
+}
