@@ -65,7 +65,7 @@ export function ImageCarousel({ images, currentIndex, onIndexChange, onImageUrlC
         <img
           src="/placeholder.svg"
           alt="No image"
-          className="w-full h-auto rounded-lg"
+          className="w-full h-auto rounded-lg max-w-[300px] max-h-[200px] object-contain mx-auto"
         />
       </div>
     )
@@ -75,7 +75,7 @@ export function ImageCarousel({ images, currentIndex, onIndexChange, onImageUrlC
     <div className="relative group">
       {/* Image container with swipe handlers */}
       <div
-        className="relative overflow-hidden rounded-lg"
+        className="relative overflow-hidden rounded-lg max-w-[300px] mx-auto"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -89,9 +89,9 @@ export function ImageCarousel({ images, currentIndex, onIndexChange, onImageUrlC
               key={index}
               src={imageUrl || "/placeholder.svg"}
               alt={`Image ${index + 1}`}
-              className="w-full h-auto flex-shrink-0"
+              className="w-full h-auto flex-shrink-0 max-h-[200px] object-contain"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = "/placeholder.svg?height=450&width=800"
+                (e.target as HTMLImageElement).src = "/placeholder.svg?height=200&width=300"
               }}
             />
           ))}
@@ -105,37 +105,37 @@ export function ImageCarousel({ images, currentIndex, onIndexChange, onImageUrlC
             variant="outline"
             size="icon"
             className={cn(
-              "absolute left-2 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background text-foreground rounded-full shadow-lg",
-              "h-10 w-10",
+              "absolute left-1 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background text-foreground rounded-full shadow-lg",
+              "h-8 w-8",
               currentIndex === 0 && "opacity-50 cursor-not-allowed"
             )}
             onClick={handlePrevious}
             disabled={currentIndex === 0}
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
           </Button>
 
           <Button
             variant="outline"
             size="icon"
             className={cn(
-              "absolute right-2 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background text-foreground rounded-full shadow-lg",
-              "h-10 w-10",
+              "absolute right-1 top-1/2 -translate-y-1/2 bg-background/90 hover:bg-background text-foreground rounded-full shadow-lg",
+              "h-8 w-8",
               currentIndex === images.length - 1 && "opacity-50 cursor-not-allowed"
             )}
             onClick={handleNext}
             disabled={currentIndex === images.length - 1}
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
 
           {/* Image indicators - bigger and easier to click */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-background/80 px-3 py-2 rounded-full">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 bg-background/80 px-2 py-1 rounded-full">
             {images.map((_, index) => (
               <button
                 key={index}
                 className={cn(
-                  "w-3 h-3 rounded-full transition-all hover:scale-125",
+                  "w-2 h-2 rounded-full transition-all hover:scale-125",
                   index === currentIndex 
                     ? "bg-primary" 
                     : "bg-muted-foreground/50 hover:bg-muted-foreground"
@@ -156,7 +156,7 @@ export function ImageCarousel({ images, currentIndex, onIndexChange, onImageUrlC
 
       {/* Image counter */}
       {images.length > 1 && (
-        <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
+        <div className="absolute top-1 right-1 bg-black/50 text-white px-1.5 py-0.5 rounded text-[10px]">
           {currentIndex + 1} / {images.length}
         </div>
       )}

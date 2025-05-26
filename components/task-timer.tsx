@@ -29,25 +29,25 @@ export function TaskTimer({ minDuration, maxDuration, isRunning, onTimerEnd }: T
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
 
-    if (isRunning) {
+    if (isRunning && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prevTime) => {
-          if (prevTime <= 1) {
-            if (interval) clearInterval(interval)
-            onTimerEnd()
-            return 0
-          }
-          return prevTime - 1
+          const newTime = prevTime - 1
+          return newTime >= 0 ? newTime : 0
         })
       }, 1000)
-    } else if (interval) {
-      clearInterval(interval)
     }
 
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [isRunning, onTimerEnd])
+  }, [isRunning, timeLeft])
+
+  useEffect(() => {
+    if (isRunning && timeLeft === 0) {
+      onTimerEnd()
+    }
+  }, [isRunning, timeLeft, onTimerEnd])
 
   useEffect(() => {
     setProgress((timeLeft / duration) * 100)

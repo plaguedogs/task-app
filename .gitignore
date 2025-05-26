@@ -25,3 +25,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.tsgoogle_service_account.json
+google_service_account.json

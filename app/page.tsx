@@ -19,10 +19,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { useMobile } from "@/hooks/use-mobile"
-import { useSwipe } from "@/hooks/use-swipe"
 import { TaskTimer } from "@/components/task-timer"
-import { FacebookFrame } from "@/components/facebook-frame"
-import { ImageCarousel } from "@/components/image-carousel"
+import { MultiImageViewer } from "@/components/multi-image-viewer"
 import { fetchGoogleSheetData } from "@/lib/google-sheets"
 import Link from "next/link"
 import { useTheme } from "@/contexts/theme-context"
@@ -36,6 +34,7 @@ interface Task {
   affiliateTitle: string
   completed: boolean
   additionalImages?: string[] // Added for columns AA-AZ
+  selectedImageUrl?: string // Track which image is currently selected
 }
 
 // Default mock data to use when no settings are found
@@ -92,20 +91,12 @@ export default function Home() {
     clickbaitPhrase: false,
     affiliateLink: false,
   })
-  const [showFacebook, setShowFacebook] = useState(false)
+  // Facebook frame state removed - no longer needed
   const [settingsConfigured, setSettingsConfigured] = useState(true)
   const [usingMockData, setUsingMockData] = useState(false)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [allImages, setAllImages] = useState<string[]>([])
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>("") // Track selected image URL
 
-  // Swipe handlers for Facebook navigation
-  const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe({
-    onSwipeRight: () => {
-      if (isMobile && !showFacebook) {
-        setShowFacebook(true)
-      }
-    },
-  })
+  // Remove swipe handlers - no longer needed
 
   // Load settings and timer duration
   useEffect(() => {
@@ -242,14 +233,7 @@ export default function Home() {
         setClickbaitPhrase(task.clickbaitPhrase)
         setIsCompleted(task.completed)
         setTimerEnded(false)
-        setCurrentImageIndex(0) // Reset to first image
-        
-        // Prepare all images array
-        const images = [task.imageUrl]
-        if (task.additionalImages) {
-          images.push(...task.additionalImages)
-        }
-        setAllImages(images)
+        setSelectedImageUrl(task.imageUrl) // Default to primary image
       }
     }
   }, [currentPage, tasks, isLoading])
@@ -407,12 +391,18 @@ export default function Home() {
   const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1)
+    } else {
+      // Circle to last page
+      setCurrentPage(totalPages)
     }
   }
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1)
+    } else {
+      // Circle to first page
+      setCurrentPage(1)
     }
   }
 
@@ -437,9 +427,11 @@ export default function Home() {
   }
 
   const openFacebook = () => {
+    // Always open in browser/new tab to ensure it opens in mobile browser, not app
+    // Using window.location for mobile to force browser
     if (isMobile) {
-      // On mobile, show the Facebook frame
-      setShowFacebook(true)
+      // This forces mobile browser instead of app
+      window.location.href = "https://m.facebook.com";
     } else {
       // On desktop, open Facebook in a new tab
       window.open("https://facebook.com", "_blank")
@@ -501,55 +493,8 @@ export default function Home() {
   }
 
   return (
-    <div
-      className="min-h-screen bg-background text-foreground relative pb-20"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
-      {/* Facebook Frame (shown when swiping right) */}
-      <FacebookFrame isVisible={showFacebook} onClose={() => setShowFacebook(false)} />
-
-      {/* Swipe indicator - only visible on mobile */}
-      {isMobile && (
-        <div className="fixed top-1/2 right-0 transform -translate-y-1/2 bg-primary/10 text-primary px-1 py-3 rounded-l-md z-10">
-          <div className="text-xs font-medium rotate-90">Swipe right for Facebook</div>
-        </div>
-      )}
-
-      {/* Facebook-style header */}
-      <header className="sticky top-0 z-40 bg-card shadow-sm border-b border-border">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center">
-            <h1 className="text-primary font-bold text-xl md:text-2xl">Task #{currentTask?.id}</h1>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleRefresh}
-              className="rounded-full bg-muted hover:bg-muted/80"
-              aria-label="Fetch real data from Google Sheet"
-              disabled={isRefreshing}
-            >
-              {isRefreshing ? (
-                <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
-              ) : (
-                <RefreshCw className="h-5 w-5 text-muted-foreground" />
-              )}
-            </Button>
-
-            <Link href="/settings">
-              <Button variant="ghost" size="icon" className="rounded-full bg-muted hover:bg-muted/80">
-                <Cog className="h-5 w-5 text-muted-foreground" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-4 md:py-6">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <main className="container mx-auto px-4 py-4 flex-1 max-w-4xl">
         {/* Settings not configured warning */}
         {!settingsConfigured && (
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start">
@@ -590,51 +535,77 @@ export default function Home() {
           </div>
         )}
 
+        {/* Header section */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-primary font-bold text-xl md:text-2xl">Task #{currentTask?.id}</h1>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleRefresh}
+              className="rounded-full bg-muted hover:bg-muted/80"
+              aria-label="Fetch real data from Google Sheet"
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? (
+                <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+              ) : (
+                <RefreshCw className="h-5 w-5 text-muted-foreground" />
+              )}
+            </Button>
+            <Link href="/settings">
+              <Button variant="ghost" size="icon" className="rounded-full bg-muted hover:bg-muted/80">
+                <Cog className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+
         {/* Main content area */}
-        <div className="space-y-4 md:space-y-6 pb-24">
+        <div className="space-y-2 md:space-y-4">
             {/* Image card */}
-            <div className="bg-card rounded-lg shadow p-4">
-              <div className="space-y-4">
-                {/* Image URL field - moved above image preview */}
+            <div className="bg-card rounded-lg shadow p-2 md:p-4">
+              <div className="space-y-2">
+                {/* Multi-image viewer */}
+                <MultiImageViewer
+                  primaryImage={currentTask?.imageUrl || ""}
+                  additionalImages={currentTask?.additionalImages}
+                  selectedImageUrl={selectedImageUrl}
+                  onImageSelect={setSelectedImageUrl}
+                />
+
+                {/* Selected Image URL field */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    Image URL {allImages.length > 1 && `(${currentImageIndex + 1} of ${allImages.length})`}
+                  <label className="block text-xs md:text-sm font-medium text-foreground mb-1">
+                    Selected Image URL
                   </label>
                   <div className="flex">
-                    <Input value={allImages[currentImageIndex] || ""} readOnly className="bg-muted pr-10" />
+                    <Input value={selectedImageUrl || ""} readOnly className="bg-muted pr-10 text-sm" />
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute right-0 top-7 h-10 w-10"
-                      onClick={() => copyToClipboard(allImages[currentImageIndex] || "", "imageUrl")}
+                      className="absolute right-0 top-6 h-8 w-8"
+                      onClick={() => copyToClipboard(selectedImageUrl || "", "imageUrl")}
                     >
                       {copiedStates.imageUrl ? (
-                        <Check className="h-4 w-4 text-green-500" />
+                        <Check className="h-3 w-3 text-green-500" />
                       ) : (
-                        <Copy className="h-4 w-4 text-muted-foreground" />
+                        <Copy className="h-3 w-3 text-muted-foreground" />
                       )}
                     </Button>
                   </div>
                 </div>
 
-                {/* Image carousel */}
-                <ImageCarousel
-                  images={allImages}
-                  currentIndex={currentImageIndex}
-                  onIndexChange={setCurrentImageIndex}
-                  onImageUrlChange={() => {}}
-                />
-
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="relative">
-                    <label className="block text-sm font-medium text-foreground mb-1">
-                      Clickbait Phrase (from Google Sheet Column C)
+                    <label className="block text-xs md:text-sm font-medium text-foreground mb-1">
+                      Clickbait Phrase (from Google Sheet Column B)
                     </label>
                     <div className="flex">
                       <Textarea
                         value={clickbaitPhrase}
                         onChange={(e) => setClickbaitPhrase(e.target.value)}
-                        className="min-h-[80px] pr-10"
+                        className="min-h-[60px] md:min-h-[80px] pr-10 text-sm"
                       />
                       <Button
                         variant="ghost"
@@ -662,7 +633,7 @@ export default function Home() {
                       <ExternalLink className="ml-1 h-4 w-4" />
                     </a>
                     <div className="relative mt-1">
-                      <Input value={currentTask?.affiliateLink || ""} readOnly className="bg-muted pr-10" />
+                      <Input value={currentTask?.affiliateLink || ""} readOnly className="bg-muted pr-10 text-sm" />
                       <Button
                         variant="ghost"
                         size="icon"
@@ -682,84 +653,92 @@ export default function Home() {
             </div>
 
             {/* Task completion and navigation */}
-            <div className="bg-card rounded-lg shadow p-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
+            <div className="bg-card rounded-lg shadow p-2 md:p-4">
+              <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="task-completed"
                     checked={isCompleted}
                     onCheckedChange={(checked) => setIsCompleted(!!checked)}
                   />
-                  <label htmlFor="task-completed" className="text-sm font-medium text-foreground cursor-pointer">
-                    Mark task as completed
+                  <label htmlFor="task-completed" className="text-xs md:text-sm font-medium text-foreground cursor-pointer">
+                    Mark completed
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between md:justify-end space-x-2">
-                  <Button variant="outline" size="sm" onClick={openGoogleSheet}>
+                {/* Big navigation buttons */}
+                <div className="flex items-center gap-2">
+                  <Button 
+                    onClick={handlePrevPage}
+                    size="default"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Back
+                  </Button>
+                  <Button 
+                    onClick={handleNextPage}
+                    size="default"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Forward
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom controls - integrated into main layout */}
+            <div className="bg-card rounded-lg shadow p-2 md:p-4 mt-4">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                {/* Facebook and Sheet buttons */}
+                <div className="flex items-center gap-2">
+                  <Button onClick={openFacebook} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <ExternalLink className="mr-1 h-3 w-3" />
+                    FB
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={openGoogleSheet}
+                  >
+                    <ExternalLink className="mr-1 h-3 w-3" />
                     Sheet
                   </Button>
+                </div>
 
-                  <div className="flex items-center space-x-1 bg-muted rounded-md px-2 py-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handlePrevPage}
-                      disabled={currentPage === 1}
-                      className="h-8 w-8"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
+                {/* Page number - middle */}
+                <div className="bg-muted rounded-md px-3 py-1">
+                  <span className="text-xs font-medium">
+                    {currentPage} / {totalPages}
+                  </span>
+                </div>
 
-                    <span className="text-sm font-medium">
-                      {currentPage} / {totalPages}
-                    </span>
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
-                      className="h-8 w-8"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+                {/* Timer section */}
+                <div className="flex items-center gap-2">
+                  <TaskTimer
+                    minDuration={minTimerDuration}
+                    maxDuration={maxTimerDuration}
+                    isRunning={isTimerRunning}
+                    onTimerEnd={handleTimerEnd}
+                  />
+                  <Button
+                    onClick={handleStartTimer}
+                    disabled={isTimerRunning}
+                    size="sm"
+                    variant={timerEnded ? "destructive" : "default"}
+                    className={timerEnded ? "animate-pulse" : ""}
+                  >
+                    {isTimerRunning ? (
+                      <Play className="h-3 w-3" />
+                    ) : (
+                      "Start"
+                    )}
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
-
-        {/* Bottom fixed bar for timer and Facebook */}
-        <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-30">
-          <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between gap-4">
-              {/* Timer section */}
-              <div className="flex items-center gap-3">
-                <TaskTimer
-                  minDuration={minTimerDuration}
-                  maxDuration={maxTimerDuration}
-                  isRunning={isTimerRunning}
-                  onTimerEnd={handleTimerEnd}
-                />
-                <Button
-                  onClick={handleStartTimer}
-                  disabled={isTimerRunning}
-                  size="sm"
-                  className={`bg-primary hover:bg-primary/90 ${timerEnded ? "animate-pulse" : ""}`}
-                >
-                  {isTimerRunning ? "Running" : "Start"}
-                </Button>
-              </div>
-
-              {/* Facebook button */}
-              <Button onClick={openFacebook} size="sm" className="bg-primary hover:bg-primary/90">
-                <ExternalLink className="mr-1 h-3 w-3" />
-                Facebook
-              </Button>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   )
@@ -769,39 +748,29 @@ export default function Home() {
 function mockFetchGoogleSheetData(): string[][] {
   return [
     [
-      "1",
-      "https://picsum.photos/800/450",
-      "You won't believe what happens when you click this link!",
-      "https://example.com/affiliate/1",
-      "Amazing Product #1",
+      "https://example.com/affiliate/1", // Column A: Affiliate link
+      "https://picsum.photos/800/450", // Column B: Image URL
+      "You won't believe what happens when you click this link!", // Column C: Clickbait phrase
     ],
     [
-      "2",
+      "https://example.com/affiliate/2",
       "https://picsum.photos/800/451",
       "This simple trick will change your life forever!",
-      "https://example.com/affiliate/2",
-      "Amazing Product #2",
     ],
     [
-      "3",
+      "https://example.com/affiliate/3",
       "https://picsum.photos/800/452",
       "Scientists are shocked by this new discovery!",
-      "https://example.com/affiliate/3",
-      "Amazing Product #3",
     ],
     [
-      "4",
+      "https://example.com/affiliate/4",
       "https://picsum.photos/800/453",
       "10 secrets they don't want you to know!",
-      "https://example.com/affiliate/4",
-      "Amazing Product #4",
     ],
     [
-      "5",
+      "https://example.com/affiliate/5",
       "https://picsum.photos/800/454",
       "The one weird trick that doctors hate!",
-      "https://example.com/affiliate/5",
-      "Amazing Product #5",
     ],
   ]
 }

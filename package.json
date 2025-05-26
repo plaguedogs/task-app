@@ -1,12 +1,29 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
+  "name": "task-app",
+  "version": "1.0.0",
+  "description": "Task management app with Google Sheets integration",
+  "main": "electron-main.js",
   "private": true,
   "scripts": {
     "dev": "npx next dev",
     "build": "npx next build",
     "start": "npx next start",
-    "lint": "npx next lint"
+    "lint": "npx next lint",
+    "build:standalone": "next build && npm run package",
+    "package": "pkg server.js -t node18-win-x64,node18-linux-x64 -o dist/task-app",
+    "serve": "node server.js",
+    "electron": "electron .",
+    "electron:build": "npm run build && electron-builder",
+    "dist": "npm run build && electron-builder --win"
+  },
+  "pkg": {
+    "assets": [
+      ".next/**/*",
+      "public/**/*",
+      "node_modules/**/*"
+    ],
+    "scripts": "server.js",
+    "outputPath": "dist"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -67,8 +84,44 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^16.5.0",
+    "electron": "^36.3.1",
+    "electron-builder": "^26.0.12",
+    "pkg": "^5.8.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
+  },
+  "build": {
+    "appId": "com.taskapp.app",
+    "productName": "Task App",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron-main.js",
+      ".next/standalone/**/*",
+      "public/**/*",
+      "!node_modules"
+    ],
+    "extraResources": [
+      {
+        "from": ".next/standalone",
+        "to": "app",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "public",
+        "to": "app/public",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "public/placeholder-logo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
