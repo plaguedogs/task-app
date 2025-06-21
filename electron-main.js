@@ -42,7 +42,8 @@ async function startNextServer() {
   console.log(`Starting Next.js server on port ${port}...`);
   
   // Start Next.js in production mode
-  nextProcess = spawn('node', ['.next/standalone/server.js'], {
+  const serverPath = path.join(app.getAppPath(), 'server.js');
+  nextProcess = spawn('node', [serverPath], {
     env: { ...process.env, PORT: port.toString() },
     cwd: app.getAppPath()
   });

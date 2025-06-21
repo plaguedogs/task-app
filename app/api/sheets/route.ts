@@ -17,19 +17,32 @@ export async function GET(request: NextRequest) {
 
     console.log("Fetching sheet data for:", sheetId)
 
-    // Check if we have service account credentials
-    if (!GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY) {
-      console.log("No service account credentials found in environment variables")
+    // Check if we have service account credentials from environment or headers
+    let clientEmail = GOOGLE_SERVICE_ACCOUNT_EMAIL
+    let privateKey = GOOGLE_PRIVATE_KEY
+
+    // Check for credentials in headers (from client)
+    const headerEmail = request.headers.get("x-google-client-email")
+    const headerKey = request.headers.get("x-google-private-key")
+
+    if (headerEmail && headerKey) {
+      console.log("Using credentials from request headers")
+      clientEmail = headerEmail
+      privateKey = headerKey.replace(/\\n/g, "\n") // Fix escaped newlines
+    }
+
+    if (!clientEmail || !privateKey) {
+      console.log("No service account credentials found")
       return NextResponse.json(
-        { error: "Service account credentials not configured in environment variables" },
+        { error: "Service account credentials not configured" },
         { status: 500 },
       )
     }
 
     // Create JWT client
     const auth = new google.auth.JWT({
-      email: GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      key: GOOGLE_PRIVATE_KEY,
+      email: clientEmail,
+      key: privateKey,
       scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
     })
 

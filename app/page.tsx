@@ -566,14 +566,6 @@ export default function Home() {
             {/* Image card */}
             <div className="bg-card rounded-lg shadow p-2 md:p-4">
               <div className="space-y-2">
-                {/* Multi-image viewer */}
-                <MultiImageViewer
-                  primaryImage={currentTask?.imageUrl || ""}
-                  additionalImages={currentTask?.additionalImages}
-                  selectedImageUrl={selectedImageUrl}
-                  onImageSelect={setSelectedImageUrl}
-                />
-
                 {/* Selected Image URL field */}
                 <div className="relative">
                   <label className="block text-xs md:text-sm font-medium text-foreground mb-1">
@@ -584,17 +576,25 @@ export default function Home() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute right-0 top-6 h-8 w-8"
+                      className="absolute right-0 top-6 h-8 w-8 hover:bg-primary/10"
                       onClick={() => copyToClipboard(selectedImageUrl || "", "imageUrl")}
                     >
                       {copiedStates.imageUrl ? (
                         <Check className="h-3 w-3 text-green-500" />
                       ) : (
-                        <Copy className="h-3 w-3 text-muted-foreground" />
+                        <Copy className="h-3 w-3 text-primary" />
                       )}
                     </Button>
                   </div>
                 </div>
+
+                {/* Multi-image viewer */}
+                <MultiImageViewer
+                  primaryImage={currentTask?.imageUrl || ""}
+                  additionalImages={currentTask?.additionalImages}
+                  selectedImageUrl={selectedImageUrl}
+                  onImageSelect={setSelectedImageUrl}
+                />
 
                 <div className="space-y-2">
                   <div className="relative">
@@ -610,13 +610,13 @@ export default function Home() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute right-0 top-7 h-10 w-10"
+                        className="absolute right-0 top-7 h-10 w-10 hover:bg-primary/10"
                         onClick={() => copyToClipboard(clickbaitPhrase, "clickbaitPhrase")}
                       >
                         {copiedStates.clickbaitPhrase ? (
                           <Check className="h-4 w-4 text-green-500" />
                         ) : (
-                          <Copy className="h-4 w-4 text-muted-foreground" />
+                          <Copy className="h-4 w-4 text-primary" />
                         )}
                       </Button>
                     </div>
@@ -637,13 +637,13 @@ export default function Home() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute right-0 top-0 h-10 w-10"
+                        className="absolute right-0 top-0 h-10 w-10 hover:bg-primary/10"
                         onClick={() => copyToClipboard(currentTask?.affiliateLink || "", "affiliateLink")}
                       >
                         {copiedStates.affiliateLink ? (
                           <Check className="h-4 w-4 text-green-500" />
                         ) : (
-                          <Copy className="h-4 w-4 text-muted-foreground" />
+                          <Copy className="h-4 w-4 text-primary" />
                         )}
                       </Button>
                     </div>
@@ -671,7 +671,7 @@ export default function Home() {
                   <Button 
                     onClick={handlePrevPage}
                     size="default"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    variant="default"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Back
@@ -679,7 +679,7 @@ export default function Home() {
                   <Button 
                     onClick={handleNextPage}
                     size="default"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    variant="default"
                   >
                     Forward
                     <ChevronRight className="h-4 w-4 ml-1" />
@@ -693,7 +693,7 @@ export default function Home() {
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 {/* Facebook and Sheet buttons */}
                 <div className="flex items-center gap-2">
-                  <Button onClick={openFacebook} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button onClick={openFacebook} size="sm" variant="default">
                     <ExternalLink className="mr-1 h-3 w-3" />
                     FB
                   </Button>

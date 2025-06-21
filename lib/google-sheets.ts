@@ -19,7 +19,17 @@ export async function fetchGoogleSheetData(
 
     // Method 1: Use our server-side API route
     try {
-      const response = await fetch(`/api/sheets?sheetId=${encodeURIComponent(sheetId)}`)
+      const headers: HeadersInit = {}
+      
+      // Add credentials to headers if provided
+      if (clientEmail && privateKey) {
+        headers['x-google-client-email'] = clientEmail
+        headers['x-google-private-key'] = privateKey
+      }
+      
+      const response = await fetch(`/api/sheets?sheetId=${encodeURIComponent(sheetId)}`, {
+        headers
+      })
 
       if (!response.ok) {
         const errorData = await response.json()

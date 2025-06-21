@@ -14,7 +14,10 @@
     "serve": "node server.js",
     "electron": "electron .",
     "electron:build": "npm run build && electron-builder",
-    "dist": "npm run build && electron-builder --win"
+    "dist": "npm run build && electron-builder --win",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:all": "npm run build && electron-builder --win --linux"
   },
   "pkg": {
     "assets": [
@@ -99,14 +102,16 @@
     },
     "files": [
       "electron-main.js",
-      ".next/standalone/**/*",
+      "server.js",
+      ".next/**/*",
       "public/**/*",
-      "!node_modules"
+      "package.json",
+      "node_modules/**/*"
     ],
     "extraResources": [
       {
-        "from": ".next/standalone",
-        "to": "app",
+        "from": ".next/static",
+        "to": "app/.next/static",
         "filter": ["**/*"]
       },
       {
@@ -116,12 +121,39 @@
       }
     ],
     "win": {
-      "target": "nsis",
-      "icon": "public/placeholder-logo.png"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "rpm",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Utility"
     }
   }
 }
